@@ -39,6 +39,15 @@
     <ClCompile Include="ImGUI\imgui-SFML.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Simulator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Menu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Fader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Planet.h">
@@ -74,6 +83,15 @@
     <ClInclude Include="ImGUI\imstb_truetype.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Simulator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Menu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Fader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\earth.jpg">
@@ -104,6 +122,15 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="Resources\venera.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Resources\img\background-epileptic.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Resources\img\background-menu.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Resources\img\solar-system-simulator-logo.jpg">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

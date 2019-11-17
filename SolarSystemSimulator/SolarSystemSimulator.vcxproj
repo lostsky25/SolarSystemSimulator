@@ -152,16 +152,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Fader.cpp" />
     <ClCompile Include="ImGUI\imgui-SFML.cpp" />
     <ClCompile Include="ImGUI\imgui.cpp" />
     <ClCompile Include="ImGUI\imgui_demo.cpp" />
     <ClCompile Include="ImGUI\imgui_draw.cpp" />
     <ClCompile Include="ImGUI\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Menu.cpp" />
     <ClCompile Include="Planet.cpp" />
     <ClCompile Include="PlanetActions.cpp" />
+    <ClCompile Include="Simulator.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Fader.h" />
     <ClInclude Include="ImGUI\imconfig-SFML.h" />
     <ClInclude Include="ImGUI\imconfig.h" />
     <ClInclude Include="ImGUI\imgui-SFML.h" />
@@ -171,11 +175,16 @@
     <ClInclude Include="ImGUI\imstb_rectpack.h" />
     <ClInclude Include="ImGUI\imstb_textedit.h" />
     <ClInclude Include="ImGUI\imstb_truetype.h" />
+    <ClInclude Include="Menu.h" />
     <ClInclude Include="Planet.h" />
     <ClInclude Include="PlanetActions.h" />
+    <ClInclude Include="Simulator.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\earth.jpg" />
+    <Image Include="Resources\img\background-epileptic.jpg" />
+    <Image Include="Resources\img\background-menu.jpg" />
+    <Image Include="Resources\img\solar-system-simulator-logo.jpg" />
     <Image Include="Resources\jupiter.jpg" />
     <Image Include="Resources\mars.jpg" />
     <Image Include="Resources\mercury.jpg" />
