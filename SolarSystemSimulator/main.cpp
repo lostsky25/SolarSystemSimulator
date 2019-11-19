@@ -6,6 +6,7 @@
 #include "Menu.h"
 #include "Fader.h"
 #include "Options.h"
+#include "Pause.h"
 
 #include <iostream>
 
@@ -20,14 +21,22 @@ static const float height = 1080;
 static const int gainParallax = 50;
 static const int scaleSize = 200;
 
+enum MenuItems
+{
+	mainMenu = 0,
+	optionsMenu,
+	pauseMenu
+};
+
 int main(int argc, char **argv) {
 	///Background picture
 	bool backgroundImageState = true;
 	bool backgroundSolidColorState = false;
 
-	bool gameLoop = false;
-	bool gameMenu = true;
-	bool gameOptions = false;
+	bool _simulatorLoop = false;
+	bool _simulatorMenu = true;
+	bool _simulatorOptions = false;
+	bool _simulatorPause = false;
 
 	float color[3] = { 0.0f, 0.0f, 0.0f };
 	float radiusScaleUnits = 0.0f;
@@ -56,17 +65,24 @@ int main(int argc, char **argv) {
 	menu.initMenu(sf::Vector2i(width * scaleSize, height * scaleSize), "Resources\\img\\stars.jpg");
 
 	menu.addRow("Start", sf::Vector2f(15000, 900 * scaleSize / 2), sf::Vector2f(scaleSize, scaleSize));
-	menu.addRow("Options", sf::Vector2f(15000, 1200 * scaleSize / 2), sf::Vector2f(scaleSize, scaleSize));
-	menu.addRow("Exit", sf::Vector2f(15000, 1500 * scaleSize / 2), sf::Vector2f(scaleSize, scaleSize));
+	menu.addRow("Options", sf::Vector2f(15000, 1000 * scaleSize / 2), sf::Vector2f(scaleSize, scaleSize));
+	menu.addRow("Exit", sf::Vector2f(15000, 1200 * scaleSize / 2), sf::Vector2f(scaleSize, scaleSize));
 
 	///Options
-	/*Options options;
+	Options options;
 	options.initMenu(sf::Vector2i(width * scaleSize, height * scaleSize), "Resources\\img\\stars.jpg");
 
-	menu.addRow("Start", sf::Vector2f(15000, 900 * scaleSize / 2), sf::Vector2f(scaleSize, scaleSize));
-	menu.addRow("Options", sf::Vector2f(15000, 1200 * scaleSize / 2), sf::Vector2f(scaleSize, scaleSize));
-	menu.addRow("Exit", sf::Vector2f(15000, 1500 * scaleSize / 2), sf::Vector2f(scaleSize, scaleSize));
-*/
+	options.addRow("Resolution", sf::Vector2f(15000, 900 * scaleSize / 2), sf::Vector2f(scaleSize, scaleSize));
+	options.addRow("Graphics", sf::Vector2f(15000, 1000 * scaleSize / 2), sf::Vector2f(scaleSize, scaleSize));
+	options.addRow("Cancel", sf::Vector2f(15000, 1200 * scaleSize / 2), sf::Vector2f(scaleSize, scaleSize));
+
+	Pause pause;
+	pause.initMenu(sf::Vector2i(width * scaleSize, height * scaleSize), "Resources\\img\\pause.png");
+
+	pause.addRow("Resume", sf::Vector2f(16000, 1100 * scaleSize / 2), sf::Vector2f(scaleSize, scaleSize));
+	pause.addRow("Options", sf::Vector2f(16000, 1200 * scaleSize / 2), sf::Vector2f(scaleSize, scaleSize));
+	pause.addRow("Exit", sf::Vector2f(16000, 1400 * scaleSize / 2), sf::Vector2f(scaleSize, scaleSize));
+
 	///Set view port
 	//simulator.setView(sf::View(sf::Vector2f(width, height), sf::Vector2f(width * 200, height * 200)));
 	//simulator.setVerticalSyncEnabled(true);
@@ -84,77 +100,141 @@ int main(int argc, char **argv) {
 			///ImGui library events
 			ImGui::SFML::ProcessEvent(event);
 			///menu
-			if (event.type == sf::Event::KeyReleased && gameMenu){
+			/*
+				_simulatorLoop
+				_simulatorMenu
+				_simulatorOptions
+			*/
+
+			if (event.type == sf::Event::KeyReleased){
 				switch (event.key.code)
 				{
-				case sf::Keyboard::Up:
-					menu.moveUp();
-					break;
-				case sf::Keyboard::Down:
-					menu.moveDown();
-					break;
-				case sf::Keyboard::Enter:
-					///Start
-					if (menu.selectedIndex() == 0)
-					{
-						gameLoop = true;
-						gameMenu = !gameLoop;
+					case sf::Keyboard::Up: {
+						if (_simulatorMenu)
+						{
+							menu.moveUp();
+						}
+						else if (_simulatorOptions) {
+							options.moveUp();
+						}
+						else if (_simulatorPause) {
+							pause.moveUp();
+						}
+						break;
+					}
+					case sf::Keyboard::Down: {
+						if (_simulatorMenu)
+						{
+							menu.moveDown();
+						}
+						else if (_simulatorOptions)
+						{
+							options.moveDown();
+						}
+						else if (_simulatorPause) {
+							pause.moveDown();
+						}
+						break;
+					}
+					case sf::Keyboard::Escape: {
+						if (_simulatorLoop)
+						{
+							_simulatorOptions = false;
+							_simulatorPause = true;
+							_simulatorLoop = true;
+							_simulatorMenu = false;
+						}
+						else {
+							_simulatorOptions = false;
+							_simulatorPause = false;
+							_simulatorLoop = false;
+							_simulatorMenu = true;
+						}
+
+						break;
+					}
+					case sf::Keyboard::Enter: {
+						if (_simulatorMenu)
+						{
+							if (menu.selectedIndex() == 0)
+							{
+								_simulatorOptions = false;
+								_simulatorPause = false;
+								_simulatorMenu = false;
+								_simulatorLoop = true;
+							}
+							else if (menu.selectedIndex() == 1)
+							{
+								_simulatorOptions = true;
+								_simulatorMenu = false;
+							}
+							else if (menu.selectedIndex() == 2)
+							{
+								simulator.close();
+							}
+						}else if (_simulatorOptions)
+						{
+							if (options.selectedIndex() == 0)
+							{
+								///Resolution
+							}
+							else if (options.selectedIndex() == 1)
+							{
+								///Graphics
+							}
+							else if (options.selectedIndex() == 2)
+							{
+								_simulatorMenu = true;
+								_simulatorOptions = false;
+							}
+						}else if (_simulatorLoop && _simulatorPause) {
+							_simulatorLoop = false;
+							if (pause.selectedIndex() == 0)
+							{
+								_simulatorOptions = false;
+								_simulatorPause = false;
+								_simulatorMenu = false;
+								_simulatorLoop = true;
+							}
+							else if (pause.selectedIndex() == 1)
+							{
+								_simulatorOptions = true;
+								_simulatorPause = false;
+								_simulatorMenu = false;
+								_simulatorLoop = false;
+							}
+							else if (pause.selectedIndex() == 2)
+							{
+								_simulatorOptions = false;
+								_simulatorPause = false;
+								_simulatorMenu = true;
+								_simulatorLoop = false;
+							}
+						}
 						simulator.clear();
+						break;
 					}
-					///Options
-					else if (menu.selectedIndex() == 1)
-					{
-						//gameLoop = false;
-						//gameMenu = false; //why?
-						//gameOptions = true;
-						//simulator.clear();
-
-					}
-					///Exit
-					else if (menu.selectedIndex() == 2) {
-						simulator.close();
-					}
-
-					break;
-				default:
-					break;
+					default:
+						break;
 				}
-			}else if (event.type == sf::Event::KeyReleased){
-				switch (event.key.code)
-				{
-				case sf::Keyboard::Escape:{
-					///Pause class
-					gameMenu = true;
-					gameLoop = false;
-					simulator.clear();
-					break;
-				}
-				case sf::Keyboard::Up:
-					break;
-				case sf::Keyboard::Down:
-					break;
-				case sf::Keyboard::Enter:
-					break;
-				default:
-					break;
-				}
-			} ///End menu
+			}
+			
 
 
 		}
 
-		if (gameMenu) {
+		if (_simulatorMenu) {
 			menu.draw(simulator);
 			menu.updateParallaxBackground(sf::Vector2f(sf::Mouse::getPosition().x * gainParallax,
 				sf::Mouse::getPosition().y * gainParallax), gainParallax);
 		}
 
-		if (gameLoop){
+		if (_simulatorLoop){
 			///ImGui interface
-			ImGui::SFML::Update(simulator, deltaTime.restart());
+			ImGui::SFML::Update(simulator, simulator.getDeltaTime().getElapsedTime());
 
 			ImGui::Begin("Solar System Configure");
-		/*
+		
 				if (ImGui::ColorEdit3("Background color", color)) {
 					bgColor.r = static_cast<sf::Uint8>(color[0] * 255.f);
 					bgColor.g = static_cast<sf::Uint8>(color[1] * 255.f);
@@ -174,14 +254,14 @@ int main(int argc, char **argv) {
 					bgColor = { 0, 0, 0 };
 				}
 
-				if (ImGui::Checkbox("Show Orbit Path", &showOrbitPathState))
+/*				if (ImGui::Checkbox("Show Orbit Path", &showOrbitPathState))
 				{
 					for (size_t count = 0; count < curve.size(); count++)
 					{
 						curve[count].clear();
 					}
 				}
-	*/
+*/
 				ImGui::LabelText("", "Planets config:");
 
 				ImGui::SliderFloat("Radius (units scale):", &radiusScaleUnits, 0, 25000);
@@ -200,10 +280,17 @@ int main(int argc, char **argv) {
 		}
 
 		///Game options
-		/*if (gameOptions)
+		if (_simulatorOptions)
 		{
 			options.draw(simulator);
-		}*/
+		}
+		
+		///Game pause
+		if (_simulatorPause)
+		{
+			pause.draw(simulator);
+		}
+
 
 		simulator.display();
 	}

@@ -24,12 +24,13 @@ void Options::initMenu(sf::Vector2i windowSize, std::string path) {
 
 	selectedItemIndex = 0;
 
-	//spritePanel.setTexture(texturePanel);
 	spriteBackground.setTexture(textureBackground);
 
-	//spritePanel.setPosition(-windowSize.x / 2, -windowSize.y / 2);
 	spriteBackground.setPosition(-windowSize.x / 2, -windowSize.y / 2);
+}
 
+void Options::updateParallaxBackground(sf::Vector2f positionMouse, int gainParallax) {
+	
 }
 
 Options::~Options()

@@ -1,6 +1,9 @@
 #pragma once
 
-#include "Simulator.h"
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/Font.hpp>
 
 class Render : public sf::RenderWindow
 {
@@ -24,7 +27,7 @@ private:
 	sf::Vector2u textureSize;
 
 	//Event
-	sf::Event event;
+	//sf::Event event;
 
 	sf::Clock deltaTime;
 	sf::Sprite spriteBackground;
