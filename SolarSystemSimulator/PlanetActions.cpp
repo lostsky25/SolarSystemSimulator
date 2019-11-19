@@ -1,7 +1,13 @@
 #include "PlanetActions.h"
 
 PlanetActions::PlanetActions(std::vector<Planet*> planets, float dt) {
+	if (planets.size() < 2)
+	{
 
+	}
+	else {
+
+	}
 }
 
 void 

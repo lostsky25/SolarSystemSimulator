@@ -41,7 +41,7 @@ Planet::Planet(float mass, float radius, sf::Vector2f position, sf::Vector2f acc
 
 
 	if (!this->texture.loadFromFile(path)) {
-		std::cerr << "Error load texture" << std::endl;
+		//std::cerr << "Error load texture" << std::endl;
 	}
 	else
 	{

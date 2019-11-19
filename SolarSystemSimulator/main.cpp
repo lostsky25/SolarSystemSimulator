@@ -1,9 +1,13 @@
 #include "ImGUI/imgui.h"
 #include "ImGUI/imgui-SFML.h"
 
+#include "Render.h"
 #include "PlanetActions.h"
 #include "Menu.h"
 #include "Fader.h"
+#include "Options.h"
+
+#include <iostream>
 
 #if _MSC_VER >= 1800
 	#include <Windows.h>
@@ -11,77 +15,76 @@
 	#include <iostream>
 #endif // !_MSC_VER >= 1800
 
-static const short width = 1920;
-static const short height = 1080;
+static const float width = 1920;
+static const float height = 1080;
+static const int gainParallax = 50;
+static const int scaleSize = 200;
 
 int main(int argc, char **argv) {
+	///Background picture
+	bool backgroundImageState = true;
+	bool backgroundSolidColorState = false;
+
+	bool gameLoop = false;
+	bool gameMenu = true;
+	bool gameOptions = false;
+
+	float color[3] = { 0.0f, 0.0f, 0.0f };
+	float radiusScaleUnits = 0.0f;
+
+	sf::Color bgColor, oldBgColor;
+	
+	sf::Vector2f viewPortSize(width * scaleSize, height * scaleSize);
+	sf::Vector2f windowSize(width, height);
+
 	Planet testPlanet(10, 200, sf::Vector2f(0,0), sf::Vector2f(0, 0), sf::Vector2f(0, 0), "p");
 
-	float mouseDelta = 200, radiusScaleUnits = 1300, ScaleX, ScaleY;
-	float color[3] = { 0.0f, 0.0f, 0.0f };
-	const float minMouseDelta = 50;
-
-	sf::Color backgroundColor, oldBackgroundColor;
-	sf::Vector2i mousePosition(0, 0); 
-	sf::Texture BackgroundTexture;
-	sf::Sprite background;
-	sf::Vector2u TextureSize;
-	sf::Vector2f WindowSize;
-	sf::Clock deltaTime;	
-	sf::ContextSettings settings;
-	settings.antialiasingLevel = 8;
-
-	sf::RenderWindow window(sf::VideoMode(width, height),
-		"Solar System Simulator",
-		sf::Style::Fullscreen,
-		settings);
-
-
-	/*Fader fadeMainLogo(window.getSize(), "Resources\\img\\main-logo.jpg", 3.0f, 0.001f);
-	fadeMainLogo.draw(window);
-*/
-	//Fader fadeLogo(window.getSize(), "Resources\\img\\solar-system-simulator-logo.jpg", 3.0f, 0.001f);
-	//fadeLogo.draw(window);
+	Render simulator(windowSize, "Solar System Simulator");
+	simulator.setView(sf::View(windowSize, viewPortSize));
+	simulator.setVerticalSyncEnabled(true);
 	
-	/*Fader fadeWarning(window.getSize(), "Resources\\img\\background-epileptic.jpg", 5.0f, 0.001f);
-	fadeWarning.draw(window);
-*/
-	Menu menu(window.getSize().x, window.getSize().y);
+	///First (main logo)
+	//Fader fadeMainLogo(viewPortSize, "Resources\\img\\main-logo.jpg", 3.0f, 0.001f);
+	//fadeMainLogo.draw(simulator);
 
-	sf::View view(sf::Vector2f(width, height), sf::Vector2f(width * mouseDelta, height * mouseDelta));
-	window.setVerticalSyncEnabled(true);
+	///Second (warning)
+	//Fader fadeWarning(viewPortSize, "Resources\\img\\background-epileptic.jpg", 5.0f, 0.001f);
+	//fadeWarning.draw(simulator);
 	
-	if (!BackgroundTexture.loadFromFile("Resources\\img\\starsMilkyWay.jpg")){
-		#if _MSC_VER >= 1800
-			OutputDebugString(L"Background texture wasn\'t opened\r\n");
-		#else
-			std::cerr << "Background texture wasn\'t opened" << std::endl;
-		#endif // !_MSC_VER >= 1800
+	///Menu
+	Menu menu;
+	menu.initMenu(sf::Vector2i(width * scaleSize, height * scaleSize), "Resources\\img\\stars.jpg");
 
-		return EXIT_FAILURE;
-	}else{
-		TextureSize = BackgroundTexture.getSize();
-		WindowSize = view.getSize();
+	menu.addRow("Start", sf::Vector2f(15000, 900 * scaleSize / 2), sf::Vector2f(scaleSize, scaleSize));
+	menu.addRow("Options", sf::Vector2f(15000, 1200 * scaleSize / 2), sf::Vector2f(scaleSize, scaleSize));
+	menu.addRow("Exit", sf::Vector2f(15000, 1500 * scaleSize / 2), sf::Vector2f(scaleSize, scaleSize));
 
-		background.setOrigin(sf::Vector2f(TextureSize.x / 2, TextureSize.y / 2));
+	///Options
+	/*Options options;
+	options.initMenu(sf::Vector2i(width * scaleSize, height * scaleSize), "Resources\\img\\stars.jpg");
 
-		ScaleX = (float)WindowSize.x / TextureSize.x;
-		ScaleY = (float)WindowSize.y / TextureSize.y;
+	menu.addRow("Start", sf::Vector2f(15000, 900 * scaleSize / 2), sf::Vector2f(scaleSize, scaleSize));
+	menu.addRow("Options", sf::Vector2f(15000, 1200 * scaleSize / 2), sf::Vector2f(scaleSize, scaleSize));
+	menu.addRow("Exit", sf::Vector2f(15000, 1500 * scaleSize / 2), sf::Vector2f(scaleSize, scaleSize));
+*/
+	///Set view port
+	//simulator.setView(sf::View(sf::Vector2f(width, height), sf::Vector2f(width * 200, height * 200)));
+	//simulator.setVerticalSyncEnabled(true);
 
-		background.setTexture(BackgroundTexture);
-	}
+	sf::Clock deltaTime;
+	deltaTime.restart();
+	///ImGui library intialize
+	ImGui::SFML::Init(simulator);
 
-	ImGui::SFML::Init(window);
-
-	while (window.isOpen())
+	while (simulator.isOpen())
 	{
 		sf::Event event;
-		while (window.pollEvent(event))
+		while (simulator.pollEvent(event))
 		{
+			///ImGui library events
 			ImGui::SFML::ProcessEvent(event);
-
-			if (event.type == sf::Event::KeyReleased)
-			{
+			///menu
+			if (event.type == sf::Event::KeyReleased && gameMenu){
 				switch (event.key.code)
 				{
 				case sf::Keyboard::Up:
@@ -91,56 +94,118 @@ int main(int argc, char **argv) {
 					menu.moveDown();
 					break;
 				case sf::Keyboard::Enter:
-					std::cout << "Entered item: " << menu.selectedIndex() << std::endl;
-					switch (menu.selectedIndex())
+					///Start
+					if (menu.selectedIndex() == 0)
 					{
-					case 0:
-
-						break;
-					case 1:
-
-						break;
-					case 2:
-						window.close();
-						break;
-					default:
-						break;
+						gameLoop = true;
+						gameMenu = !gameLoop;
+						simulator.clear();
 					}
+					///Options
+					else if (menu.selectedIndex() == 1)
+					{
+						//gameLoop = false;
+						//gameMenu = false; //why?
+						//gameOptions = true;
+						//simulator.clear();
+
+					}
+					///Exit
+					else if (menu.selectedIndex() == 2) {
+						simulator.close();
+					}
+
 					break;
 				default:
 					break;
 				}
-			}
-
-			if (event.type == sf::Event::KeyPressed) {
+			}else if (event.type == sf::Event::KeyReleased){
 				switch (event.key.code)
 				{
-				case sf::Keyboard::Escape: {
-					window.close();
+				case sf::Keyboard::Escape:{
+					///Pause class
+					gameMenu = true;
+					gameLoop = false;
+					simulator.clear();
 					break;
 				}
+				case sf::Keyboard::Up:
+					break;
+				case sf::Keyboard::Down:
+					break;
+				case sf::Keyboard::Enter:
+					break;
 				default:
 					break;
 				}
-			}
+			} ///End menu
+
+
 		}
 
-		/*ImGui::SFML::Update(window, deltaTime.restart());
+		if (gameMenu) {
+			menu.draw(simulator);
+			menu.updateParallaxBackground(sf::Vector2f(sf::Mouse::getPosition().x * gainParallax,
+				sf::Mouse::getPosition().y * gainParallax), gainParallax);
+		}
 
-		ImGui::Begin("Solar System Configure");
+		if (gameLoop){
+			///ImGui interface
+			ImGui::SFML::Update(simulator, deltaTime.restart());
 
-		ImGui::LabelText("text", "text");
-		ImGui::End();
-		*/
-		//window.draw(background);
+			ImGui::Begin("Solar System Configure");
+		/*
+				if (ImGui::ColorEdit3("Background color", color)) {
+					bgColor.r = static_cast<sf::Uint8>(color[0] * 255.f);
+					bgColor.g = static_cast<sf::Uint8>(color[1] * 255.f);
+					bgColor.b = static_cast<sf::Uint8>(color[2] * 255.f);
+				}
 
-		//ImGui::SFML::Render(window);
+				if (ImGui::Checkbox("Backgroud Image", &backgroundImageState))
+					//background.setScale(ScaleX * mouseDelta / minMouseDelta, ScaleY * mouseDelta / minMouseDelta);
 
-		//window.draw(testPlanet);
 
-		menu.draw(window);
+				if (ImGui::Checkbox("Background Solid Color", &backgroundSolidColorState)) {
+					simulator.clear(bgColor);
+				}
 
-		window.display();
+				if (!backgroundSolidColorState)
+				{
+					bgColor = { 0, 0, 0 };
+				}
+
+				if (ImGui::Checkbox("Show Orbit Path", &showOrbitPathState))
+				{
+					for (size_t count = 0; count < curve.size(); count++)
+					{
+						curve[count].clear();
+					}
+				}
+	*/
+				ImGui::LabelText("", "Planets config:");
+
+				ImGui::SliderFloat("Radius (units scale):", &radiusScaleUnits, 0, 25000);
+
+			ImGui::End();
+
+			///ImGui interface end
+
+			simulator.clear(bgColor);
+
+			///Draw planets
+			simulator.draw(testPlanet);
+
+			ImGui::SFML::Render(simulator);
+
+		}
+
+		///Game options
+		/*if (gameOptions)
+		{
+			options.draw(simulator);
+		}*/
+
+		simulator.display();
 	}
 
 	ImGui::SFML::Shutdown();

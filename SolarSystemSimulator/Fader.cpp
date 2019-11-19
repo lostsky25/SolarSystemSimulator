@@ -1,6 +1,6 @@
 #include "Fader.h"
 
-Fader::Fader(sf::Vector2u windowSize, std::string pathLogo, float timeOverload, float fadeDt)
+Fader::Fader(sf::Vector2f windowSize, std::string pathLogo, float timeOverload, float fadeDt)
 {
 	this->timeOverload = timeOverload;
 	this->fadeDt = fadeDt;
@@ -8,24 +8,20 @@ Fader::Fader(sf::Vector2u windowSize, std::string pathLogo, float timeOverload, 
 	transparent = sf::Color::Black;
 	transparent.a = 0;
 
-	
-	//textureLogo.setSmooth(true);
-
-	if (!textureLogo.loadFromFile(pathLogo))
+	if (!textureBackground.loadFromFile(pathLogo))
 	{
 
 	}
 
-	spriteBackground.setTexture(textureLogo);
-	spriteBackground.setScale((float)windowSize.x / textureLogo.getSize().x,
-		(float)windowSize.y / textureLogo.getSize().y);
+	spriteBackground.setTexture(textureBackground);
+	spriteBackground.setPosition(sf::Vector2f(-windowSize.x / 2, -windowSize.y / 2));
+	spriteBackground.setScale((float)windowSize.x / textureBackground.getSize().x,
+		(float)windowSize.y / textureBackground.getSize().y);
 
 
 }
 
-void 
-Fader::draw(sf::RenderWindow& window)
-{
+void Fader::draw(sf::RenderWindow& window){
 	while (deltaTime.getElapsedTime().asSeconds() < timeOverload && window.isOpen())
 	{
 		window.draw(spriteBackground);
@@ -43,7 +39,7 @@ Fader::draw(sf::RenderWindow& window)
 		spriteBackground.setColor(transparent);
 
 		window.display();
-	}	
+	}
 }
 
 

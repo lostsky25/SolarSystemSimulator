@@ -152,6 +152,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AbstractMenu.cpp" />
     <ClCompile Include="Fader.cpp" />
     <ClCompile Include="ImGUI\imgui-SFML.cpp" />
     <ClCompile Include="ImGUI\imgui.cpp" />
@@ -160,11 +161,14 @@
     <ClCompile Include="ImGUI\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Menu.cpp" />
+    <ClCompile Include="Options.cpp" />
+    <ClCompile Include="Pause.cpp" />
     <ClCompile Include="Planet.cpp" />
     <ClCompile Include="PlanetActions.cpp" />
-    <ClCompile Include="Simulator.cpp" />
+    <ClCompile Include="Render.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AbstractMenu.h" />
     <ClInclude Include="Fader.h" />
     <ClInclude Include="ImGUI\imconfig-SFML.h" />
     <ClInclude Include="ImGUI\imconfig.h" />
@@ -176,9 +180,11 @@
     <ClInclude Include="ImGUI\imstb_textedit.h" />
     <ClInclude Include="ImGUI\imstb_truetype.h" />
     <ClInclude Include="Menu.h" />
+    <ClInclude Include="Options.h" />
+    <ClInclude Include="Pause.h" />
     <ClInclude Include="Planet.h" />
     <ClInclude Include="PlanetActions.h" />
-    <ClInclude Include="Simulator.h" />
+    <ClInclude Include="Render.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\earth.jpg" />
