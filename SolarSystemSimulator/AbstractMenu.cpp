@@ -28,7 +28,6 @@ void AbstractMenu::initMenu(sf::Vector2i windowSize, std::string path) {
 	
 	spritePanel.setPosition(-windowSize.x / 2, -windowSize.y / 2);
 	spriteBackground.setPosition(-windowSize.x / 2, -windowSize.y / 2);
-	
 }
 
 void AbstractMenu::addRow(std::string text, sf::Vector2f position, sf::Vector2f scaleItem)
