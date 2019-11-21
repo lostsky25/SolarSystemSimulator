@@ -9,6 +9,7 @@
 #include "Pause.h"
 
 #include <iostream>
+#include <filesystem>
 
 #if _MSC_VER >= 1800
 	#include <Windows.h>
@@ -20,15 +21,35 @@ static const float width = 1920;
 static const float height = 1080;
 static const int gainParallax = 50;
 static const int scaleSize = 200;
-
-enum MenuItems
-{
-	mainMenu = 0,
-	optionsMenu,
-	pauseMenu
-};
+//static const int scalePlanet = 1;
 
 int main(int argc, char **argv) {
+	
+	std::string path = "Resources\\img\\Planets";
+
+	std::vector<std::string> packImagesPath;
+	sf::Texture texturePackImage[100]; //Fixed size ???
+	sf::Sprite spritePackImage[100];   //Fixed size ???
+	
+	int packItem = 0;
+
+	for (const auto & entry : std::experimental::filesystem::directory_iterator(path))
+		packImagesPath.push_back(entry.path().string());
+
+	for (size_t count = 0; count < packImagesPath.size(); count++)
+	{
+		texturePackImage[count].loadFromFile(packImagesPath[count]);
+		spritePackImage[count].setTexture(texturePackImage[count]);
+	}
+	
+	char newMassBuffer[30] = { 0 };
+	char newRadiusBuffer[30] = { 0 };
+
+	int newMass = 0;
+	int newRadius = 0;
+
+	bool defaultRadiusState = false;
+
 	///Background picture
 	bool backgroundImageState = true;
 	bool backgroundSolidColorState = false;
@@ -39,18 +60,62 @@ int main(int argc, char **argv) {
 	bool _simulatorPause = false;
 
 	float color[3] = { 0.0f, 0.0f, 0.0f };
+	const float minMouseDelta = 200;
 	float radiusScaleUnits = 0.0f;
+	float mouseDelta = 200;
+
+	sf::Vector2f speedScaleUnits(0, 0);
 
 	sf::Color bgColor, oldBgColor;
-	
-	sf::Vector2f viewPortSize(width * scaleSize, height * scaleSize);
-	sf::Vector2f windowSize(width, height);
 
-	Planet testPlanet(10, 200, sf::Vector2f(0,0), sf::Vector2f(0, 0), sf::Vector2f(0, 0), "p");
+	sf::Texture backgroundTexture;
+	sf::Sprite backgroundSprite;
+	sf::Vector2u TextureSize;  //Added to store texture size.
+	sf::Vector2f WindowSize;   //Added to store window size.
 
-	Render simulator(windowSize, "Solar System Simulator");
-	simulator.setView(sf::View(windowSize, viewPortSize));
+	float ScaleX;
+	float ScaleY;
+
+	Render simulator(sf::Vector2f(width, height), "Solar System Simulator");
+
+	sf::View view(sf::Vector2f(width, height), sf::Vector2f(width * mouseDelta, height * mouseDelta));
+	simulator.setView(view);
 	simulator.setVerticalSyncEnabled(true);
+
+	if (!backgroundTexture.loadFromFile("Resources\\img\\starsMilkyWay.jpg"))
+	{
+
+	}
+	else
+	{
+		TextureSize = backgroundTexture.getSize(); //Get size of texture.
+		WindowSize = view.getSize();             //Get size of window.
+
+		backgroundSprite.setOrigin(sf::Vector2f(TextureSize.x / 2, TextureSize.y / 2));
+
+		ScaleX = (float)WindowSize.x / TextureSize.x;
+		ScaleY = (float)WindowSize.y / TextureSize.y;     //Calculate scale.
+
+		backgroundSprite.setTexture(backgroundTexture);
+		backgroundSprite.setScale(ScaleX * mouseDelta / minMouseDelta, ScaleY * mouseDelta / minMouseDelta);
+	}
+
+	//Planets
+	Planet *sun = new Planet(1.989E30, 695510, sf::Vector2f(0, -2000), sf::Vector2f(0, 0), sf::Vector2f(0, 0), "Resources\\img\\Planets\\sun.jpg");
+
+	Planet *mercury = new Planet(3.285E23, 2439.7, sf::Vector2f(0, -57910000), sf::Vector2f(0, 0), sf::Vector2f(4.1, 0.3), "Resources\\img\\Planets\\mercury.jpg");
+	Planet *venera = new Planet(4.867E24, 6051.8, sf::Vector2f(0, -108200000), sf::Vector2f(0, 0), sf::Vector2f(2.9, 0.5), "Resources\\img\\Planets\\venera.jpg");
+	Planet *earth = new Planet(5.972E24, 6371, sf::Vector2f(0, -149600000), sf::Vector2f(0, 0), sf::Vector2f(2.5, 0.5), "Resources\\img\\Planets\\earth.jpg");
+
+	std::vector<Planet*> listPlanets;
+	listPlanets.push_back(mercury);
+	listPlanets.push_back(venera);
+	listPlanets.push_back(earth);
+
+	//For mouse
+	sf::Vector2f mouseScalePosition;
+
+	PlanetActions pla(sun, listPlanets, 1000.0f);
 	
 	///First (main logo)
 	//Fader fadeMainLogo(viewPortSize, "Resources\\img\\main-logo.jpg", 3.0f, 0.001f);
@@ -87,8 +152,11 @@ int main(int argc, char **argv) {
 	//simulator.setView(sf::View(sf::Vector2f(width, height), sf::Vector2f(width * 200, height * 200)));
 	//simulator.setVerticalSyncEnabled(true);
 
-	sf::Clock deltaTime;
-	deltaTime.restart();
+	sf::CircleShape ball;
+	ball.setPosition(mouseScalePosition);
+	ball.setFillColor(sf::Color::Green);
+	ball.setRadius(5000);
+	
 	///ImGui library intialize
 	ImGui::SFML::Init(simulator);
 
@@ -99,12 +167,51 @@ int main(int argc, char **argv) {
 		{
 			///ImGui library events
 			ImGui::SFML::ProcessEvent(event);
+
 			///menu
 			/*
 				_simulatorLoop
 				_simulatorMenu
 				_simulatorOptions
 			*/
+			if (event.type == sf::Event::MouseWheelMoved && _simulatorLoop)
+			{
+				if (mouseDelta < minMouseDelta)
+					mouseDelta = minMouseDelta;
+				else
+					mouseDelta += event.mouseWheel.delta * 15;
+
+				if (backgroundImageState)
+					backgroundSprite.setScale(ScaleX * mouseDelta / minMouseDelta, ScaleY * mouseDelta / minMouseDelta);
+
+				view.reset(sf::FloatRect(sf::Vector2f(width, height), sf::Vector2f(width * mouseDelta, height * mouseDelta)));
+				view.setCenter(sf::Vector2f(-width, -height));
+				simulator.setView(view);
+			}
+
+			if (event.type == sf::Event::MouseMoved && _simulatorLoop)
+			{
+				mouseScalePosition = sf::Vector2f(sf::Mouse::getPosition().x * mouseDelta - mouseDelta * width / 2, sf::Mouse::getPosition().y * mouseDelta - mouseDelta * height / 2);
+				ball.setPosition(mouseScalePosition);
+			}
+
+			if (event.type == sf::Event::MouseButtonPressed && _simulatorLoop)
+			{
+				Planet *temp;
+				//std::cout << sf::Mouse::getPosition().x * mouseDelta - view.getSize().x << " " << sf::Mouse::getPosition().y * mouseDelta - view.getSize().y << std::endl;
+				temp = new Planet(
+					newMass, 
+					newRadius, 
+					sf::Vector2f(mouseScalePosition.x * view.getSize().x / mouseDelta / 2, mouseScalePosition.y * view.getSize().x / mouseDelta / 2), 
+					sf::Vector2f(0, 0), speedScaleUnits,
+					packImagesPath[packItem]);
+
+				std::cout << "New Mass: " << newMass << "New Radius: " << newRadius << std::endl;
+
+				listPlanets.push_back(temp);
+				pla.addPlanet(temp);
+				
+			}
 
 			if (event.type == sf::Event::KeyReleased){
 				switch (event.key.code)
@@ -218,9 +325,6 @@ int main(int argc, char **argv) {
 						break;
 				}
 			}
-			
-
-
 		}
 
 		if (_simulatorMenu) {
@@ -242,16 +346,23 @@ int main(int argc, char **argv) {
 				}
 
 				if (ImGui::Checkbox("Backgroud Image", &backgroundImageState))
-					//background.setScale(ScaleX * mouseDelta / minMouseDelta, ScaleY * mouseDelta / minMouseDelta);
+					backgroundSprite.setScale(ScaleX * mouseDelta / minMouseDelta, ScaleY * mouseDelta / minMouseDelta);
 
 
-				if (ImGui::Checkbox("Background Solid Color", &backgroundSolidColorState)) {
-					simulator.clear(bgColor);
-				}
+				ImGui::Checkbox("Background Solid Color", &backgroundSolidColorState);
 
-				if (!backgroundSolidColorState)
+				//if (!backgroundSolidColorState)
+				//{
+				//	bgColor = { 0, 0, 0 };
+				//}
+
+				if (ImGui::Checkbox("Set Default Raduis", &defaultRadiusState))
 				{
-					bgColor = { 0, 0, 0 };
+					for (size_t count = 0; count < pla.getCountOfPlanets(); count++)
+					{
+						listPlanets[count]->setDefaultRadius();
+					}
+					radiusScaleUnits = 0;
 				}
 
 /*				if (ImGui::Checkbox("Show Orbit Path", &showOrbitPathState))
@@ -264,16 +375,67 @@ int main(int argc, char **argv) {
 */
 				ImGui::LabelText("", "Planets config:");
 
-				ImGui::SliderFloat("Radius (units scale):", &radiusScaleUnits, 0, 25000);
+				ImGui::SliderFloat("Radius (units scale):", &radiusScaleUnits, 0, 10000);
+
+				ImGui::LabelText("", "Generate new planet config:");
+				
+				ImGui::InputText("Mass: ", newMassBuffer, sizeof(newMassBuffer));
+				ImGui::InputText("Radius: ", newRadiusBuffer, sizeof(newRadiusBuffer));
+
+				ImGui::SliderFloat("Speed vector x-> (units):", &speedScaleUnits.x, -100, 100);
+				ImGui::SliderFloat("Speed vector y-> (units):", &speedScaleUnits.y, -100, 100);
+
+				newMass = atof(newMassBuffer);
+				newRadius = atof(newRadiusBuffer);
+				
+
+				//ImGui::BeginGroup();
+				for (size_t count = 0; count < packImagesPath.size(); count++)
+				{
+					ImGui::Image(spritePackImage[count], ImVec2(25, 25));
+
+					if (ImGui::IsItemClicked())
+					{
+						packItem = count;
+					}
+				}
+				//ImGui::EndGroup();
 
 			ImGui::End();
 
+			for (size_t count = 0; count < pla.getCountOfPlanets(); count++)
+			{
+				listPlanets[count]->addRadius(radiusScaleUnits);
+			}
+
 			///ImGui interface end
+			
+			//Clear background (solid color)
+			if (backgroundSolidColorState)
+			{
+				simulator.clear(bgColor);
+			}
+			else
+			{
+				simulator.clear(sf::Color(0, 0, 0));
+			}
 
-			simulator.clear(bgColor);
+			if (backgroundImageState)
+			{
+				simulator.draw(backgroundSprite);
+			}
 
+			if (!_simulatorPause)
+			{
+				pla.calculatePositions();
+			}
 			///Draw planets
-			simulator.draw(testPlanet);
+			simulator.draw(pla.getSun());
+
+			for (size_t count = 0; count < pla.getCountOfPlanets(); count++)
+			{
+				simulator.draw(pla.getItem(count));
+			}
 
 			ImGui::SFML::Render(simulator);
 
@@ -291,7 +453,9 @@ int main(int argc, char **argv) {
 			pause.draw(simulator);
 		}
 
+		simulator.draw(ball);
 
+		//simulator.setMouseCursorVisible(false);
 		simulator.display();
 	}
 

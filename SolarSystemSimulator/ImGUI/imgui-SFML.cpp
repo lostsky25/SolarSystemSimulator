@@ -285,7 +285,7 @@ void Init(sf::Window& window, const sf::Vector2f& displaySize, bool loadDefaultF
     s_windowHasFocus = window.hasFocus();
 }
 
-void ProcessEvent(const sf::Event& event) {
+int ProcessEvent(const sf::Event& event) {
     if (s_windowHasFocus) {
         ImGuiIO& io = ImGui::GetIO();
 
@@ -345,7 +345,9 @@ void ProcessEvent(const sf::Event& event) {
                 break;
             default:
                 break;
+				return 1;
         }
+		return 0;
     }
 
     switch (event.type) {

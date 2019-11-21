@@ -15,9 +15,9 @@
 #include <limits.h>
 #include <math.h>
 
-//#define _CHANGE_MASS(MASS) (MASS / 1.989E30 * 600000)
-//#define _CHANGE_WAY(WAY) (WAY / 2000)
-//#define _CHANGE_RADIUS(RADIUS) (RADIUS / 200)
+#define _CHANGE_MASS(MASS) (MASS / 1.989E30 * 600000)
+#define _CHANGE_WAY(WAY) (WAY / 2000)
+#define _CHANGE_RADIUS(RADIUS) (RADIUS / 200)
 
 class Planet : public sf::CircleShape
 {
@@ -26,15 +26,17 @@ public:
 
 	//Getters
 	float getMass(void);
+	float getRadius(void);
 	float getRadiusVec(void);
-	//sf::Vector2f getPosition(void);
+	sf::Vector2f getPosition(void);
 	sf::Vector2f getAcceleration(void);
 	sf::Vector2f getVelocity(void);
 	
 	//Setters
 	void setMass(float);
+	void setDefaultRadius(void);
 	void setRadiusVec(float);
-	//void setPosition(sf::Vector2f);
+	void setPosition(sf::Vector2f);
 	void setAcceleration(sf::Vector2f);
 	void setVelocity(sf::Vector2f);
 
@@ -45,7 +47,7 @@ public:
 
 private:
 	float mass;											//in kilograms
-	//float radius;										//in kilometers
+	float radius;										//in kilometers
 	float radiusVec;									//UNITS
 	sf::Texture texture;								//Picture (png, jpg, jpeg, tfif)
 	sf::Vector2f position, acceleration, velocity;		//Movement mechanics
