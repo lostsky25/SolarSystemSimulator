@@ -14,3 +14,29 @@ Available a few opportunities for change:
 
 ![screen1](https://user-images.githubusercontent.com/57411317/72093745-15753c80-3326-11ea-9834-8967cc99c250.png)
 
+Classes descriptions:
+## Planet -  The planet is a object, which keeps a few characteristics.
+Values are changing with _CHANGE_NAME(param) macros, it's reduced to abstract units. Units are proportional to real values.
+   * Mass
+   * Radius
+   * Position (x, y)
+   * Acceleration
+   * Velocity
+   * Texture
+   
+## PlanetActions - The PlanetActions is a object, which interacts with Planet objects.
+   * Calculate positions - Calculates positions of planets
+   * Force vector - Force vector between two planets
+   * (std::vector) Planets - Keeps Planet objects
+   * Add planet - Allow to add some planet
+   
+## AbstractMenu - polymorphic class.
+   * Draw - gets a window in which the menu will be drawn
+   * Update Parallax - parallax effect is associcated with mouse movements
+
+## Menu <- AbstractMenu
+
+## Pause <- AbstractMenu
+   * Keeps some overload methods
+   
+## Render <- sf::RenderWindow
